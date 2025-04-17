@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 type Props = Readonly<{
   children: React.ReactNode;
-  trigger: string;
+  trigger: React.ReactNode;
 }>;
 
 export function SheetHoc({ children, trigger }: Props) {
@@ -13,11 +13,13 @@ export function SheetHoc({ children, trigger }: Props) {
         <SheetTrigger className="hidden md:block" asChild>
           {trigger}
         </SheetTrigger>
-        <SheetContent>{children}</SheetContent>
+        <SheetContent className="min-w-xl">{children}</SheetContent>
       </Sheet>
       <Drawer>
-        <DrawerTrigger asChild>{trigger}</DrawerTrigger>
-        <DrawerContent>{children}</DrawerContent>
+        <DrawerTrigger className="md:hidden" asChild>
+          {trigger}
+        </DrawerTrigger>
+        <DrawerContent className="h-[95%] ">{children}</DrawerContent>
       </Drawer>
     </>
   );

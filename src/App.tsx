@@ -1,10 +1,12 @@
 import Header from './components/shared/Header';
+import UserList from './components/shared/UserList/UserList';
 
 function App() {
   return (
-    <div className="flex flex-col flex-1">
+    <main className=" h-screen flex flex-col flex-1">
       <Header />
-    </div>
+      <UserList />
+    </main>
   );
 }
 
