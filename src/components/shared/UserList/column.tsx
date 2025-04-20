@@ -1,22 +1,17 @@
-import { ColumnDef } from '@tanstack/react-table';
+/* eslint-disable react-refresh/only-export-components */
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal, Pencil, Trash } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  // DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { UserType } from '@/lib/schema/user.schema';
 import { SheetHoc } from '../SheetHoc';
 import UserCreateForm from '../UserCreateForm';
+import { useDeleteUser } from '@/lib/customHook/useGetHook';
+import { toast } from 'react-toastify';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandGroup } from '@/components/ui/command'; 
 
-export const columns: ColumnDef<UserType>[] = [
+export const columns: ColumnDef<UserType & { _id: string }>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -63,42 +58,63 @@ export const columns: ColumnDef<UserType>[] = [
   },
   {
     accessorKey: 'phone',
-    header: () => <div className="text-right">Phone</div>,
+    header: () => "Phone",
     cell: ({ row }) => (
-      <div className="text-right font-medium">{row.getValue('phone')}</div>
+      <div className=" font-medium">{row.getValue('phone')}</div>
     ),
   },
   {
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const isAdmin = row.original.role == 'admin';
+
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" disabled={!isAdmin} className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
+        <TableOptions {...row} />
+      );
+    },
+  },
+];
+
+
+const TableOptions = (row: Row<UserType & { _id: string }>) => {
+  const deleteUser = useDeleteUser()
+
+  return (
+    <Popover   >
+      <PopoverTrigger asChild>
+        <MoreHorizontal />
+
+      </PopoverTrigger>
+      <PopoverContent align="end" className='w-56 p-0 md:p-0'>
+        <Command>
+          <CommandGroup>
+            <Button variant="ghost" className="w-full px-2 md:px-2"
               onClick={() => {
-                console.log('deleted');
+                deleteUser.mutate(row.original._id, {
+                  onSuccess: () => {
+                    toast.success("User is deleted"); 
+                  },
+                  onError: () => {
+                    toast.error("User is not deleted")
+                  }
+                })
+
+
+
               }}
-              className="w-full"
             >
-              <span>Delete</span>
-              <Trash className="text-destructive ml-auto" size={18} />
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+              <div className="w-full flex items-center gap-2 justify-between">
+                <span>Delete</span>
+                <Trash className="text-destructive ml-auto" size={18} />
+              </div>
+
+            </Button>
 
             <SheetHoc
               trigger={
                 <Button variant="ghost" className="w-full px-2 md:px-2">
                   <div className="w-full flex items-center gap-2 justify-between">
-                    <span className="font-normal">Edit</span>
+                    <span  >Edit</span>
                     <Pencil size={18} className="text-primary" />
                   </div>
                 </Button>
@@ -106,9 +122,13 @@ export const columns: ColumnDef<UserType>[] = [
             >
               <UserCreateForm defaultData={row.original} />{' '}
             </SheetHoc>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
+          </CommandGroup>
+
+        </Command>
+
+
+
+      </PopoverContent>
+    </Popover>
+  );
+}
